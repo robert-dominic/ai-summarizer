@@ -6,7 +6,7 @@ A Manifest V3 Chrome Extension that extracts content from any webpage and return
 
 ## Deliverable Links
 
-- **Video Walkthrough**: [Google Drive Link]()
+- **Video Walkthrough**: [Google Drive Link](https://drive.google.com/file/d/1aeU0rj0o9Q6iF8rboH1SQLGpS_lKx5G9/view?usp=sharing)
 
 ---
 
