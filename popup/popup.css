@@ -55,7 +55,7 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 14px;
     -webkit-font-smoothing: antialiased;
     transition:
         background var(--transition),
@@ -89,7 +89,7 @@ body {
 }
 
 .logo-text {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.05em;
     color: var(--text);
@@ -169,7 +169,7 @@ body {
     border-radius: var(--radius-sm);
     color: var(--text);
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 13px;
     transition:
         border-color var(--transition),
         box-shadow var(--transition),
@@ -197,7 +197,7 @@ body {
     border-radius: var(--radius-sm);
     color: #fff;
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
@@ -221,7 +221,7 @@ body {
 
 .hint-text {
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 12px;
     text-align: center;
 }
 
@@ -246,7 +246,7 @@ body {
     flex: 1;
     color: var(--text);
     font-family: var(--font-serif);
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.45;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -260,7 +260,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--muted);
-    font-size: 10px;
+    font-size: 11px;
     padding: 2px 8px;
     white-space: nowrap;
     margin-top: 2px;
@@ -281,7 +281,7 @@ body {
     border-radius: var(--radius-sm);
     color: var(--text-sec);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 14px;
     cursor: pointer;
     transition:
         background var(--transition),
@@ -314,9 +314,9 @@ body {
     border-radius: var(--radius-md);
     color: #fff;
     font-family: var(--font-mono);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     cursor: pointer;
     box-shadow: var(--shadow-sm);
     transition:
@@ -354,7 +354,7 @@ body {
     gap: 10px;
     padding: 16px;
     color: var(--text-sec);
-    font-size: 12px;
+    font-size: 13px;
 }
 
 @keyframes spin {
@@ -397,7 +397,7 @@ body {
 .error-text {
     color: var(--text-sec);
     font-family: var(--font-serif);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
     margin-bottom: 9px;
     word-break: break-word;
@@ -410,7 +410,7 @@ body {
     border-radius: var(--radius-sm);
     color: var(--orange);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     padding: 5px 12px;
     cursor: pointer;
     transition: background var(--transition);
@@ -461,7 +461,7 @@ body {
 /* Classes injected by popup.js into result-body */
 .r-label {
     color: var(--gold);
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     margin-bottom: 8px;
@@ -475,7 +475,7 @@ body {
 .r-para {
     color: var(--text);
     font-family: var(--font-serif);
-    font-size: 13px;
+    font-size: 16px;
     line-height: 1.65;
 }
 
@@ -488,7 +488,7 @@ body {
 
 .r-bullet-dot {
     color: var(--orange);
-    font-size: 10px;
+    font-size: 13px;
     margin-top: 4px;
     flex-shrink: 0;
 }
@@ -496,7 +496,7 @@ body {
 .r-bullet-text {
     color: var(--text-sec);
     font-family: var(--font-serif);
-    font-size: 13px;
+    font-size: 16px;
     line-height: 1.55;
 }
 
@@ -506,7 +506,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 13px;
     padding: 3px 9px;
     margin-top: 4px;
 }
@@ -520,7 +520,7 @@ body {
 
 .word-count {
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 13px;
 }
 
 .footer-actions {
@@ -538,7 +538,7 @@ body {
     border-radius: var(--radius-sm);
     color: var(--text-sec);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
     transition:
         background var(--transition),
@@ -595,7 +595,7 @@ body {
 .banner-text {
     color: var(--text-sec);
     font-family: var(--font-serif);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
 }
 
@@ -658,7 +658,7 @@ body {
 
 .modal-title {
     color: var(--text);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.04em;
 }
@@ -679,7 +679,7 @@ body {
 
 .modal-link {
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
     text-decoration: none;
     transition: color var(--transition);
 }
