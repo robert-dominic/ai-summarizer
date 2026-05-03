@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Summarizer</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+
+    <div class="popup">
+
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-dot"></div>
+                <span class="logo-text">AI Summarizer</span>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+                    <img id="theme-icon" src="../icons/sun.svg" width="15" height="15" alt="Toggle theme" />
+                </button>
+                <button class="icon-btn" id="settings-toggle" aria-label="API key settings">
+                    <img src="../icons/key.svg" width="15" height="15" alt="API Key Settings" />
+                </button>
+            </div>
+        </header>
+
+        <main class="content">
+
+            <div class="banner" id="banner" hidden>
+                <span class="banner-dot"></span>
+                <p class="banner-text">Add your Gemini API key to get started — click the key icon above.</p>
+            </div>
+
+            <section class="page-info" id="page-info">
+                <div class="page-title-row">
+                    <p class="page-title" id="page-title">Loading page...</p>
+                    <span class="domain-pill" id="page-domain"></span>
+                </div>
+            </section>
+
+            <div class="mode-row" role="group" aria-label="Summary mode">
+                <button class="mode-btn active" id="mode-full" aria-pressed="true">
+                    Full summary
+                </button>
+                <button class="mode-btn" id="mode-brief" aria-pressed="false">
+                    Brief &middot; 3 bullets
+                </button>
+            </div>
+
+            <button class="primary-btn" id="summarize-btn">
+                Summarize page
+            </button>
+
+            <div class="loading" id="loading" hidden aria-live="polite">
+                <div class="spinner" aria-hidden="true"></div>
+                <span>Summarizing...</span>
+            </div>
+
+            <div class="error-box" id="error-box" hidden role="alert">
+                <img src="../icons/alert-circle.svg" width="15" height="15" alt="" />
+                <div class="error-content">
+                    <p class="error-text" id="error-text"></p>
+                    <button class="retry-btn" id="retry-btn">Try again</button>
+                </div>
+            </div>
+
+            <section class="result" id="result" hidden aria-live="polite">
+                <div class="result-body" id="result-body"></div>
+                <div class="result-footer">
+                    <span class="word-count" id="word-count"></span>
+                    <div class="footer-actions">
+                        <button class="action-btn" id="copy-btn" aria-label="Copy summary">
+                            <img src="../icons/copy.svg" width="13" height="13" alt="" />
+                            Copy
+                        </button>
+                        <button class="action-btn" id="clear-btn" aria-label="Clear cached summary">
+                            <img src="../icons/trash-2.svg" width="13" height="13" alt="" />
+                            Clear cache
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Settings Modal -->
+        <div class="modal-overlay" id="modal-overlay" hidden aria-modal="true" role="dialog"
+            aria-label="API Key Settings">
+            <div class="modal" id="modal">
+                <div class="modal-header">
+                    <p class="modal-title">API Key Settings</p>
+                    <button class="icon-btn" id="modal-close" aria-label="Close settings">
+                        <img src="../icons/x.svg" width="15" height="15" alt="Close" />
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="section-label">Gemini API Key</p>
+                    <input type="password" id="api-key-input" class="text-input" placeholder="AIza···············"
+                        aria-label="Gemini API key" autocomplete="off" spellcheck="false" />
+                    <p class="hint-text">Stored locally on your device &middot; never transmitted</p>
+                    <a class="modal-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">
+                        Get a free Gemini API key ↗
+                    </a>
+                </div>
+                <div class="modal-footer">
+                    <button class="save-btn" id="save-key-btn">Save key</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
