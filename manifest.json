@@ -23,12 +23,8 @@
     },
     "content_scripts": [
         {
-            "matches": [
-                "<all_urls>"
-            ],
-            "js": [
-                "content.js"
-            ],
+            "matches": ["<all_urls>"],
+            "js": ["content.js"],
             "run_at": "document_idle"
         }
     ],
@@ -37,6 +33,9 @@
         "storage",
         "scripting",
         "tabs"
+    ],
+    "host_permissions": [
+        "https://*.vercel.app/*"
     ],
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'"
@@ -47,9 +46,7 @@
                 "icons/*.svg",
                 "icons/*.png"
             ],
-            "matches": [
-                "<all_urls>"
-            ]
+            "matches": ["<all_urls>"]
         }
     ]
 }

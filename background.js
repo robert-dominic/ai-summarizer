@@ -1,16 +1,4 @@
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
-async function getApiKey() {
-    return new Promise((resolve, reject) => {
-        chrome.storage.local.get(["apiKey"], (result) => {
-            if (result.apiKey) {
-                resolve(result.apiKey);
-            } else {
-                reject(new Error("No API key found. Please add your Gemini API key in settings."));
-            }
-        });
-    });
-}
+const PROXY_URL = "https://ai-summarizer-proxy-psi.vercel.app/api/summarize";
 
 async function getCachedSummary(url, mode) {
     const cacheKey = `${url}:${mode}`;
@@ -77,54 +65,27 @@ async function getPageContent(tabId) {
     });
 }
 
-async function callGemini(apiKey, content, mode = "full") {
-    const prompt = mode === "brief"
-        ? `Summarize this webpage in exactly 3 bullet points. Each bullet must be one sentence only, maximum 20 words. No intro, no outro, just the 3 bullets.
-
-Format exactly like this:
-- First key point here
-- Second key point here
-- Third key point here
-
-Title: ${content.title}
-Content: ${content.content}`
-
-        : `Analyze this webpage and respond in this exact structure. Keep each section tight and concise.
-
-**Summary**
-Write 2-3 sentences max. Plain prose, no bullets.
-
-**Key Insights**
-- First important takeaway in one sentence
-- Second important takeaway in one sentence
-- Third important takeaway in one sentence
-- Fourth important takeaway in one sentence (if relevant)
-
-**Estimated Reading Time**
-X min read
-
-Title: ${content.title}
-Content: ${content.content}`;
-
-    const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+async function callProxy(content, mode = "full") {
+    const response = await fetch(PROXY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-                temperature: 0.3,
-                maxOutputTokens: mode === "breif" ? 120 : 2048
-            }
-        })
+        body: JSON.stringify({ content, mode })
     });
 
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error?.error?.message || "Gemini API request failed. Please try again.");
+    const text = await response.text();
+
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch {
+        throw new Error(`Proxy returned invalid response: ${text.slice(0, 100)}`);
     }
 
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    if (!response.ok) {
+        throw new Error(data?.error || "Proxy request failed. Please try again.");
+    }
+
+    return data.summary;
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -132,7 +93,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "SUMMARIZE") {
         (async () => {
             try {
-                const apiKey = await getApiKey();
                 const cached = await getCachedSummary(message.url, message.mode);
 
                 if (cached) {
@@ -141,7 +101,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
                 }
 
                 const content = await getPageContent(message.tabId);
-                const summary = await callGemini(apiKey, content, message.mode);
+                const summary = await callProxy(content, message.mode);
 
                 await cacheSummary(message.url, message.mode, summary);
                 sendResponse({ success: true, summary, fromCache: false });
@@ -151,13 +111,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
             }
         })();
 
-        return true;
-    }
-
-    if (message.action === "SAVE_KEY") {
-        chrome.storage.local.set({ apiKey: message.apiKey }, () => {
-            sendResponse({ success: true });
-        });
         return true;
     }
 
