@@ -22,20 +22,12 @@
             </div>
             <div class="header-right">
                 <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
-                    <img id="theme-icon" src="../icons/sun.svg" width="15" height="15" alt="Toggle theme" />
-                </button>
-                <button class="icon-btn" id="settings-toggle" aria-label="API key settings">
-                    <img src="../icons/key.svg" width="15" height="15" alt="API Key Settings" />
+                    <img id="theme-icon" src="../icons/sun.svg" width="16" height="16" alt="Toggle theme" />
                 </button>
             </div>
         </header>
 
         <main class="content">
-
-            <div class="banner" id="banner" hidden>
-                <span class="banner-dot"></span>
-                <p class="banner-text">Add your Gemini API key to get started — click the key icon above.</p>
-            </div>
 
             <section class="page-info" id="page-info">
                 <div class="page-title-row">
@@ -88,31 +80,6 @@
             </section>
 
         </main>
-
-        <!-- Settings Modal -->
-        <div class="modal-overlay" id="modal-overlay" hidden aria-modal="true" role="dialog"
-            aria-label="API Key Settings">
-            <div class="modal" id="modal">
-                <div class="modal-header">
-                    <p class="modal-title">API Key Settings</p>
-                    <button class="icon-btn" id="modal-close" aria-label="Close settings">
-                        <img src="../icons/x.svg" width="15" height="15" alt="Close" />
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p class="section-label">Gemini API Key</p>
-                    <input type="password" id="api-key-input" class="text-input" placeholder="AIza···············"
-                        aria-label="Gemini API key" autocomplete="off" spellcheck="false" />
-                    <p class="hint-text">Stored locally on your device &middot; never transmitted</p>
-                    <a class="modal-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">
-                        Get a free Gemini API key ↗
-                    </a>
-                </div>
-                <div class="modal-footer">
-                    <button class="save-btn" id="save-key-btn">Save key</button>
-                </div>
-            </div>
-        </div>
 
     </div>
 

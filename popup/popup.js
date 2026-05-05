@@ -8,9 +8,6 @@ const $ = id => document.getElementById(id);
 
 const themeToggle = $('theme-toggle');
 const themeIcon = $('theme-icon');
-const settingsToggle = $('settings-toggle');
-const apiKeyInput = $('api-key-input');
-const saveKeyBtn = $('save-key-btn');
 const pageTitle = $('page-title');
 const pageDomain = $('page-domain');
 const modeFull = $('mode-full');
@@ -31,7 +28,6 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
     loadTheme();
     await loadCurrentTab();
-    await checkApiKey();
 }
 
 /* Theme */
@@ -59,66 +55,6 @@ themeToggle.addEventListener('click', () => {
     setTheme(next);
     chrome.storage.local.set({ theme: next });
 });
-
-/* Settings panel */
-
-const modalOverlay = $('modal-overlay');
-const modalClose = $('modal-close');
-const banner = $('banner');
-
-function openModal() {
-    modalOverlay.hidden = false;
-    apiKeyInput.focus();
-}
-
-function closeModal() {
-    modalOverlay.hidden = true;
-}
-
-settingsToggle.addEventListener('click', openModal);
-modalClose.addEventListener('click', closeModal);
-
-modalOverlay.addEventListener('click', e => {
-    if (e.target === modalOverlay) closeModal();
-});
-
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !modalOverlay.hidden) closeModal();
-});
-
-saveKeyBtn.addEventListener('click', saveApiKey);
-apiKeyInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') saveApiKey();
-});
-
-function saveApiKey() {
-    const key = apiKeyInput.value.trim();
-    if (!key) {
-        apiKeyInput.focus();
-        return;
-    }
-
-    chrome.runtime.sendMessage({ action: 'SAVE_KEY', apiKey: key }, response => {
-        if (response?.success) {
-            apiKeyInput.value = '';
-            closeModal();
-            banner.hidden = true;
-            saveKeyBtn.textContent = 'Saved ✓';
-            setTimeout(() => { saveKeyBtn.textContent = 'Save key'; }, 1500);
-        }
-    });
-}
-
-async function checkApiKey() {
-    return new Promise(resolve => {
-        chrome.storage.local.get(['apiKey'], result => {
-            if (!result.apiKey) {
-                banner.hidden = false;
-            }
-            resolve();
-        });
-    });
-}
 
 /* Current tab */
 
@@ -161,7 +97,6 @@ retryBtn.addEventListener('click', summarize);
 
 function summarize() {
     if (!currentTab) return;
-    if (!modalOverlay.hidden) closeModal();
 
     showState('loading');
 
@@ -257,7 +192,7 @@ function buildResult(text, fromCache) {
 
     if (fromCache) {
         const badge = document.createElement('span');
-        badge.style.cssText = 'font-size:10px;color:var(--gold);margin-left:8px;letter-spacing:0.05em';
+        badge.style.cssText = 'font-size:11px;color:var(--gold);margin-left:8px;letter-spacing:0.05em';
         badge.textContent = '· cached';
         wordCount.appendChild(badge);
     }
