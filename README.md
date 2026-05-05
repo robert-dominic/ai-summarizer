@@ -1,6 +1,6 @@
 # AI Page Summarizer
 
-A Manifest V3 Chrome Extension that extracts content from any webpage and returns a structured AI-powered summary using Google Gemini — with bullet points, key insights, and estimated reading time, all without ever exposing your API key.
+A Manifest V3 Chrome Extension that extracts content from any webpage and returns a structured AI-powered summary using Google Gemini — with bullet points, key insights, and estimated reading time, all without ever exposing an API key.
 
 ---
 
@@ -16,6 +16,8 @@ Most pages take 8–15 minutes to read. This extension reads them for you in sec
 
 Open any article, blog post, Wikipedia page, or news piece — click the extension icon, hit **Summarize page**, and get back a clean structured breakdown of what actually matters. Switch to **Brief mode** for a tight 3-bullet digest when you need the gist fast.
 
+No setup required. No API key. Install and go.
+
 ---
 
 ## Features
@@ -27,8 +29,6 @@ Open any article, blog post, Wikipedia page, or news piece — click the extensi
 - **Dark / light mode** — persisted across sessions
 - **Copy to clipboard** — one click to copy the full summary
 - **Word count** — displayed on every result
-- **Settings modal** — clean overlay for API key management
-- **First-time onboarding banner** — guides new users to add their key before anything else
 - **Graceful error handling** — every failure state gives the user a clear, actionable message
 
 ---
@@ -40,7 +40,6 @@ This is a local extension. It is not published on the Chrome Web Store.
 ### Prerequisites
 
 - Google Chrome browser
-- A free Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) — no credit card required
 
 ### Installation
 
@@ -64,14 +63,7 @@ chrome://extensions
 
 6. The extension will appear in your extensions list. Pin it to your toolbar by clicking the puzzle icon and pinning **AI Page Summarizer**.
 
-### Adding Your API Key
-
-1. Click the extension icon on any webpage
-2. Click the **key icon** in the top right of the popup
-3. Paste your Gemini API key into the input field
-4. Click **Save key**
-
-Your key is stored locally on your device using `chrome.storage.local`. It is never sent anywhere except directly to the Gemini API when you request a summary.
+That's it. The extension works immediately — no API key required.
 
 ---
 
@@ -83,6 +75,7 @@ Your key is stored locally on your device using `chrome.storage.local`. It is ne
 4. Click **Summarize page**
 5. Read the result, copy it, or clear its cache — all from the popup
 
+---
 
 ## Troubleshooting
 
@@ -95,7 +88,7 @@ If the extension does not respond on first use after installation, refresh the p
 ```
 ai-summarizer/
 ├── manifest.json          # Extension configuration and permissions
-├── background.js          # Service worker — handles API calls and caching
+├── background.js          # Service worker — handles proxy calls and caching
 ├── content.js             # Content script — extracts page text from DOM
 ├── popup/
 │   ├── popup.html         # Popup UI markup
@@ -109,18 +102,20 @@ ai-summarizer/
 
 ## Architecture
 
-The extension is built across four isolated environments that communicate through Chrome's message passing system. No component has more access than it needs.
+The extension is built across four isolated environments that communicate through Chrome's message passing system. API calls are routed through a serverless proxy on Vercel — the extension never holds or transmits an API key.
 
 ```
 Webpage DOM
     ↕ (chrome.tabs.sendMessage)
 Content Script          — reads and cleans page text, sends it up on request
     ↕ (chrome.runtime.sendMessage)
-Background Service Worker — reads API key from storage, calls Gemini, caches result
+Background Service Worker — checks cache, calls proxy, returns summary
+    ↕ (HTTPS POST)
+Vercel Proxy (api/summarize) — holds API key in env, calls Gemini, returns result
     ↕ (sendResponse)
-Popup UI                — triggers summarization, displays result, manages settings
+Popup UI                — triggers summarization, displays result
     ↕ (chrome.storage.local)
-Local Storage           — holds API key and cached summaries
+Local Storage           — holds cached summaries and theme preference
 ```
 
 ### Content Script
@@ -136,28 +131,40 @@ Local Storage           — holds API key and cached summaries
 
 ### Background Service Worker
 
-`background.js` is the only component that touches the Gemini API. It:
+`background.js` is the only extension component that makes outbound network requests. It:
 
-1. Reads the API key from `chrome.storage.local`
-2. Checks for a valid cached summary for the current URL and mode
-3. If no cache exists, requests page content from the content script
-4. Constructs a structured prompt and calls the Gemini API
-5. Caches the result with a timestamp under a `url:mode` key
-6. Returns the summary to the popup
+1. Checks for a valid cached summary for the current URL and mode
+2. If no cache exists, requests page content from the content script
+3. Sends the content and mode to the Vercel proxy via HTTPS POST
+4. Caches the result with a timestamp under a `url:mode` key
+5. Returns the summary to the popup
+
+The background script never handles an API key. All key management is on the proxy side.
+
+### Vercel Proxy
+
+A single serverless function (`api/summarize.js`) deployed to Vercel acts as the secure middleware between the extension and Gemini. It:
+
+1. Receives `{ content, mode }` from the background script
+2. Reads the Gemini API key from a Vercel environment variable
+3. Constructs the prompt and calls the Gemini API
+4. Returns `{ summary }` to the extension
+
+The key is stored as a Vercel environment variable and never leaves the server.
 
 ### Popup UI
 
-`popup.html`, `popup.css`, and `popup.js` handle everything the user sees. The popup sends messages to the background worker and renders the response. It never makes API calls directly and never reads the API key — it only triggers the background to act.
+`popup.html`, `popup.css`, and `popup.js` handle everything the user sees. The popup sends messages to the background worker and renders the response. It makes no API calls and has no access to any credentials.
 
 ---
 
 ## AI Integration
 
-**Provider:** Google Gemini 2.5 Flash via the `generateContent` REST endpoint
+**Provider:** Google Gemini 1.5 Flash via the `generateContent` REST endpoint
 
-**Endpoint:**
+**Endpoint (called from proxy, not extension):**
 ```
-https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
 ```
 
 **How prompts are structured:**
@@ -180,27 +187,24 @@ Low temperature keeps summaries factual and consistent. Higher temperature would
 
 ## Security Decisions
 
-### API Key Storage
-The API key lives in `chrome.storage.local` — a storage system that only this extension can access. It never gets written into `popup.js` or `content.js`, which are more exposed to anyone inspecting the extension. Only `background.js` reads it, and only in the moment it needs to make an API call. Once used, it goes nowhere else.
+### API Key Handling via Proxy
+The Gemini API key never touches the extension. It lives in a Vercel environment variable, read only by the serverless function at request time. The extension sends page content to the proxy over HTTPS and receives a summary back — no credentials flow in either direction. This means the key cannot be extracted by inspecting the extension, reading storage, or intercepting messages between extension components.
 
 ### XSS Prevention
-When the summary comes back from Gemini, it gets built into the DOM piece by piece using `createElement` and `textContent` — never `innerHTML`. The reason is simple: if Gemini ever returned something unexpected containing HTML or script tags, `innerHTML` would execute it. With `textContent`, it just shows up as plain text on screen. The AI output is treated as data, not markup.
+When the summary comes back from the proxy, it gets built into the DOM piece by piece using `createElement` and `textContent` — never `innerHTML`. If Gemini ever returned something unexpected containing HTML or script tags, `innerHTML` would execute it. With `textContent`, it renders as plain text. AI output is treated as data, not markup.
 
 ### Content Security Policy
-The manifest includes a strict CSP that only allows scripts from within the extension itself to run. No external script sources, no inline scripts.
-
-This blocks any inline scripts and external script sources from running inside the extension's pages.
+The manifest includes a strict CSP that only allows scripts from within the extension itself to run. No external script sources, no inline scripts. This blocks injection attacks targeting the extension's own pages.
 
 ### Minimal Permissions
 
 | Permission | Why It's Needed |
 |---|---|
 | `activeTab` | Access the current tab the user is on |
-| `storage` | Save API key and cached summaries |
+| `storage` | Save cached summaries and theme preference |
 | `scripting` | Programmatically inject content script if needed |
 | `tabs` | Read tab title and URL for display and cache keying |
-
-No `host_permissions` are declared beyond what `activeTab` and `content_scripts` already cover.
+| `host_permissions: *.vercel.app` | Allow the background script to call the proxy |
 
 ---
 
@@ -209,11 +213,11 @@ No `host_permissions` are declared beyond what `activeTab` and `content_scripts`
 ### Caching and Dynamic Pages
 Summaries are cached per URL and per mode for one hour. That works fine for articles and documentation that don't change. But for news sites or pages that update frequently, the cached version might be outdated before the hour is up. A better long-term fix would be detecting when the page content has actually changed rather than relying purely on time — but for this version, one hour felt like a reasonable middle ground.
 
-### API Key Setup
-Every user needs to supply their own Gemini API key. The ideal approach would be running a small proxy server that holds one key on the backend — users would just install the extension and it works. I skipped that here to keep the extension fully self-contained with no server to maintain or worry about. The tradeoff is a slightly more involved first-time setup.
+### Proxy Dependency
+The extension depends on the Vercel proxy being live to function. If the proxy goes down, summarization fails. The tradeoff is deliberate — running a proxy is the only way to keep the API key off the client entirely while still letting the extension work out of the box with no user setup. A self-contained extension that stores a user-supplied key would work without a server but shifts key management back to the user.
 
 ### Content Extraction
-The content script uses a priority list of CSS selectors to find the main article text on a page — things like `article`, `main`, and common CMS class names. This works well on most standard blog and news layouts. It can struggle on pages that load content dynamically with JavaScript, have unusual structures, or sit behind a paywall. A more robust solution would use Mozilla's Readability library, which is what Firefox's reader mode is built on — I kept it manual here to avoid external dependencies.
+The content script uses a priority list of CSS selectors to find the main article text on a page — things like `article`, `main`, and common CMS class names. This works well on most standard blog and news layouts. It can struggle on pages that load content dynamically with JavaScript, have unusual structures, or sit behind a paywall. A more robust solution would use Mozilla's Readability library, which is what Firefox's reader mode is built on — kept manual here to avoid external dependencies.
 
 ### Output Length Limits
 The Gemini API call is capped at 2048 tokens for full summaries and 120 for brief mode. Brief mode is intentionally tight to force concise output — without the token cap, Gemini would sometimes produce longer bullets than the full summary. On very long or dense pages, the full summary might not cover every section of the original content, but it covers what matters most.
